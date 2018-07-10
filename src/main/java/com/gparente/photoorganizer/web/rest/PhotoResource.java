@@ -3,6 +3,7 @@ package com.gparente.photoorganizer.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import com.gparente.photoorganizer.domain.Photo;
 
+import com.gparente.photoorganizer.domain.Tag;
 import com.gparente.photoorganizer.repository.PhotoRepository;
 import com.gparente.photoorganizer.repository.TagRepository;
 import com.gparente.photoorganizer.web.rest.errors.BadRequestAlertException;
@@ -21,8 +22,10 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * REST controller for managing Photo.
@@ -36,9 +39,11 @@ public class PhotoResource {
     private static final String ENTITY_NAME = "photo";
 
     private final PhotoRepository photoRepository;
+    private final TagRepository tagRepository;
 
-    public PhotoResource(PhotoRepository photoRepository) {
+    public PhotoResource(PhotoRepository photoRepository, TagRepository tagRepository) {
         this.photoRepository = photoRepository;
+        this.tagRepository = tagRepository;
     }
 
     /**
@@ -55,6 +60,7 @@ public class PhotoResource {
         if (photo.getId() != null) {
             throw new BadRequestAlertException("A new photo cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        setTagsToPhoto(photo);
         Photo result = photoRepository.save(photo);
         return ResponseEntity.created(new URI("/api/photos/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
@@ -77,10 +83,41 @@ public class PhotoResource {
         if (photo.getId() == null) {
             return createPhoto(photo);
         }
+        setTagsToPhoto(photo);
         Photo result = photoRepository.save(photo);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, photo.getId().toString()))
             .body(result);
+    }
+
+    private void setTagsToPhoto(Photo photo) {
+
+        Set<Tag> tags = photo.getTags();
+        Set<Tag> parentsTag = new HashSet<>();
+
+        for (Tag tag: tags) {
+            parentsTag.addAll(this.findParentsOfTag(tag));
+        }
+
+        tags.addAll(parentsTag);
+        photo.setTags(tags);
+
+    }
+
+    private Set<Tag> findParentsOfTag(Tag tag) {
+
+        Set<Tag> results = new HashSet<>();
+
+        if (tag.getParentTag() == null) {
+            return new HashSet<>();
+        }
+
+        Tag parentTag = tagRepository.findParentOfTag(tag);
+        results.add(parentTag);
+        results.addAll(this.findParentsOfTag(parentTag));
+
+        return results;
+
     }
 
     /**
