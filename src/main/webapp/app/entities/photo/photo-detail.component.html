@@ -1,0 +1,48 @@
+
+<div *ngIf="photo">
+    <h2><span jhiTranslate="photoOrganizerApp.photo.detail.title">Photo</span> {{photo.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="photoOrganizerApp.photo.fileName">File Name</span></dt>
+        <dd>
+            <span>{{photo.fileName}}</span>
+        </dd>
+        <dt><span jhiTranslate="photoOrganizerApp.photo.path">Path</span></dt>
+        <dd>
+            <span>{{photo.path}}</span>
+        </dd>
+        <dt><span jhiTranslate="photoOrganizerApp.photo.type">Type</span></dt>
+        <dd>
+            <span>{{photo.type}}</span>
+        </dd>
+        <dt><span jhiTranslate="photoOrganizerApp.photo.dateCreated">Date Created</span></dt>
+        <dd>
+            <span>{{photo.dateCreated | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="photoOrganizerApp.photo.tags">Tags</span></dt>
+        <dd>
+            <span *ngFor="let tags of photo.tags; let last = last">
+                <a [routerLink]="['/tag', tags?.id ]">{{tags.id}}</a>{{last ? '' : ', '}}
+            </span>
+        </dd>
+        <dt><span jhiTranslate="photoOrganizerApp.photo.user">User</span></dt>
+        <dd>
+            {{photo.user?.login}}
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'photo/'+ photo.id + '/edit'} }]"
+            replaceUrl="true"
+            queryParamsHandling="merge"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+    </button>
+</div>
