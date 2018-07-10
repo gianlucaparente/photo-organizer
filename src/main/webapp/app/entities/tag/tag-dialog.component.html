@@ -34,7 +34,7 @@
             <label class="form-control-label" jhiTranslate="photoOrganizerApp.tag.parentTag" for="field_parentTag">Parent Tag</label>
             <select class="form-control" id="field_parentTag" name="parentTag" [(ngModel)]="tag.parentTag">
                 <option [ngValue]="null"></option>
-                <option [ngValue]="tagOption.id === tag.parentTag?.id ? tag.parentTag : tagOption" *ngFor="let tagOption of parenttags; trackBy: trackTagById">{{tagOption.id}}</option>
+                <option [ngValue]="tagOption.id === tag.parentTag?.id ? tag.parentTag : tagOption" *ngFor="let tagOption of parenttags; trackBy: trackTagById">{{tagOption.name}}</option>
             </select>
         </div>
     </div>

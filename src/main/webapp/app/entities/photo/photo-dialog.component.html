@@ -38,7 +38,7 @@
         <div class="form-group">
             <label jhiTranslate="photoOrganizerApp.photo.tags" for="field_tags">Tags</label>
             <select class="form-control" id="field_tags" multiple name="tags" [(ngModel)]="photo.tags">
-                <option [ngValue]="getSelected(photo.tags, tagOption)" *ngFor="let tagOption of tags; trackBy: trackTagById">{{tagOption.id}}</option>
+                <option [ngValue]="getSelected(photo.tags, tagOption)" *ngFor="let tagOption of tags; trackBy: trackTagById">{{tagOption.name}}</option>
             </select>
         </div>
         <div class="form-group">

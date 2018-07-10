@@ -36,7 +36,7 @@ public class Tag implements Serializable {
     private User user;
 
     @OneToOne
-    @JoinColumn(unique = true)
+    @JoinColumn
     private Tag parentTag;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
