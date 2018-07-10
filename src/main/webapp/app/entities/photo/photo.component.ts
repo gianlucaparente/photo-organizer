@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
 import { Photo } from './photo.model';
+import { Tag } from '../tag/tag.model';
 import { PhotoService } from './photo.service';
 import { ITEMS_PER_PAGE, Principal } from '../../shared';
 
@@ -107,6 +108,8 @@ currentAccount: any;
         }
         return result;
     }
+
+    getTags = (tags: Array<Tag>) => tags.map((t) => t.name).join(',');
 
     private onSuccess(data, headers) {
         this.links = this.parseLinks.parse(headers.get('link'));

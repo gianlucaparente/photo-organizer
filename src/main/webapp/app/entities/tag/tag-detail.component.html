@@ -19,7 +19,7 @@
         <dt><span jhiTranslate="photoOrganizerApp.tag.parentTag">Parent Tag</span></dt>
         <dd>
             <div *ngIf="tag.parentTag">
-                <a [routerLink]="['/tag', tag.parentTag?.id]">{{tag.parentTag?.id}}</a>
+                <a [routerLink]="['/tag', tag.parentTag?.id]">{{tag.parentTag?.name}}</a>
             </div>
         </dd>
     </dl>

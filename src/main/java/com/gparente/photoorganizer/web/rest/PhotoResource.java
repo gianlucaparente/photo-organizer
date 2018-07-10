@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.gparente.photoorganizer.domain.Photo;
 
 import com.gparente.photoorganizer.repository.PhotoRepository;
+import com.gparente.photoorganizer.repository.TagRepository;
 import com.gparente.photoorganizer.web.rest.errors.BadRequestAlertException;
 import com.gparente.photoorganizer.web.rest.util.HeaderUtil;
 import com.gparente.photoorganizer.web.rest.util.PaginationUtil;
@@ -92,7 +93,7 @@ public class PhotoResource {
     @Timed
     public ResponseEntity<List<Photo>> getAllPhotos(Pageable pageable) {
         log.debug("REST request to get a page of Photos");
-        Page<Photo> page = photoRepository.findAll(pageable);
+        Page<Photo> page = photoRepository.findAllWithEagerRelationships(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/photos");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

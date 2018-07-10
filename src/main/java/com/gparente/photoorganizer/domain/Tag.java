@@ -29,7 +29,6 @@ public class Tag implements Serializable {
     private String type;
 
     @ManyToMany(mappedBy = "tags")
-    @JsonIgnore
     private Set<Photo> photos = new HashSet<>();
 
     @ManyToOne

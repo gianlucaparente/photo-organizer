@@ -20,7 +20,8 @@
             "type": "Type",
             "photos": "Photos",
             "user": "User",
-            "parentTag": "Parent Tag"
+            "parentTag": "Parent Tag",
+            "numberPhotos": "N. Photos"
         }
     }
 }

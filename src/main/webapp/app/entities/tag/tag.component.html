@@ -21,6 +21,7 @@
             <th jhiSortBy="type"><span jhiTranslate="photoOrganizerApp.tag.type">Type</span> <span class="fa fa-sort"></span></th>
             <th jhiSortBy="user.login"><span jhiTranslate="photoOrganizerApp.tag.user">User</span> <span class="fa fa-sort"></span></th>
             <th jhiSortBy="parentTag.id"><span jhiTranslate="photoOrganizerApp.tag.parentTag">Parent Tag</span> <span class="fa fa-sort"></span></th>
+            <th><span jhiTranslate="photoOrganizerApp.tag.numberPhotos">N. Photos</span></th>
             <th></th>
             </tr>
             </thead>
@@ -34,8 +35,11 @@
                 </td>
                 <td>
                     <div *ngIf="tag.parentTag">
-                        <a [routerLink]="['../tag', tag.parentTag?.id ]" >{{tag.parentTag?.id}}</a>
+                        <a [routerLink]="['../tag', tag.parentTag?.id ]" >{{tag.parentTag?.name}}</a>
                     </div>
+                </td>
+                <td>
+                    {{tag.photos ? tag.photos.length : 0}}
                 </td>
                 <td class="text-right">
                     <div class="btn-group flex-btn-group-container">

@@ -92,7 +92,7 @@ public class TagResource {
     @Timed
     public ResponseEntity<List<Tag>> getAllTags(Pageable pageable) {
         log.debug("REST request to get a page of Tags");
-        Page<Tag> page = tagRepository.findAll(pageable);
+        Page<Tag> page = tagRepository.findAllWithEagerRelationships(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/tags");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
