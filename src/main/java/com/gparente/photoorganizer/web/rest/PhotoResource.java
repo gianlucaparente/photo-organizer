@@ -37,7 +37,7 @@ public class PhotoResource {
 
     private final Logger log = LoggerFactory.getLogger(PhotoResource.class);
 
-    private final String PHOTO_BASE_PATH = "images/root";
+    private static final String PHOTO_BASE_PATH = "images/root";
 
     private static final String ENTITY_NAME = "photo";
 
@@ -194,13 +194,36 @@ public class PhotoResource {
 
     }
 
+    /**
+     * GET  /photos/:id : get the "id" photo.
+     *
+     * @param id the id of the photo to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the photo, or with status 404 (Not Found)
+     */
+    @GetMapping("/photos/{id}/thumbnail")
+    @Timed
+    public ResponseEntity<String> getPhotoThumbnail(@PathVariable Long id) throws IOException {
+        log.debug("REST request to get Photo thumbnail : {}", id);
+
+        Photo photo = photoRepository.findOne(id);
+        PhotoDTO photoDTO = new PhotoDTO(photo);
+
+        this.loadImage(photoDTO, true);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return new ResponseEntity<>(photoDTO.getImage(), headers, HttpStatus.OK);
+
+    }
+
     private void loadImage(PhotoDTO photo, boolean isThumbnail) {
 
         String fullPath;
         if (isThumbnail) {
-            fullPath = PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "-thumbnail." + photo.getType();
+            fullPath = PhotoResource.PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "-thumbnail." + photo.getType();
         } else {
-            fullPath = PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "." + photo.getType();
+            fullPath = PhotoResource.PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "." + photo.getType();
         }
 
         ClassPathResource resource = new ClassPathResource(fullPath);
