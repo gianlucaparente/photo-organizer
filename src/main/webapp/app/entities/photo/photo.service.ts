@@ -46,8 +46,12 @@ export class PhotoService {
             .map((res: HttpResponse<Photo[]>) => this.convertArrayResponse(res));
     }
 
+    getPhotoImage(photoId: number): Observable<string> {
+        return this.http.get(`${this.resourceUrl}/${photoId}/image`, { responseType: 'text' });
+    }
+
     delete(id: number): Observable<HttpResponse<any>> {
-        return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response'});
+        return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
 
     private convertResponse(res: EntityResponseType): EntityResponseType {

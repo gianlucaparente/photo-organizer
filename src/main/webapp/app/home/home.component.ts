@@ -106,7 +106,7 @@ export class HomeComponent implements OnInit {
     }
 
     updateHistory(tag: Tag) {
-        let i = this.history.indexOf(tag);
+        const i = this.history.indexOf(tag);
         if (i !== -1) {
             this.history.splice(i, this.history.length - i);
         }
@@ -170,10 +170,6 @@ export class HomeComponent implements OnInit {
 
     getTagSelected() {
         return this.history[this.history.length - 1];
-    };
-
-    getImageSrc(photo: Photo) {
-        return require('../../content/images/source/' + photo.path + '/' + photo.fileName + '.' + photo.type);
     }
 
 }

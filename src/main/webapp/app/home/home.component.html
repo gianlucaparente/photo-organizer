@@ -35,14 +35,14 @@
         <button type="button" class="btn btn-outline-primary mr-2" *ngFor="let tag of tags" (click)="clickOnTag(tag)">
             <span class="fa fa-image"></span> {{tag.name}}
         </button>
-        <span *ngIf="tags.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No tags found.</span>
+        <span *ngIf="tags && tags.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No tags found.</span>
     </div>
 
     <h4 class="mt-3">Your Photos</h4>
 
     <div class="d-flex">
-        <img *ngFor="let photo of photos" style="height: 200px" src="{{getImageSrc(photo)}}" alt="{{photo.fileName + '.' + photo.type}}" class="img-thumbnail">
-        <span *ngIf="photos.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No photo found.</span>
+        <img *ngFor="let photo of photos" style="height: 200px" [src]="photo.thumbnail" alt="{{photo.fileName + '.' + photo.type}}" class="img-thumbnail">
+        <span *ngIf="photos && photos.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No photo found.</span>
     </div>
 
     <div *ngIf="photos && photos.length > 0" class="mt-3">

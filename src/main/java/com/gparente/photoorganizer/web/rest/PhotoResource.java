@@ -6,26 +6,27 @@ import com.gparente.photoorganizer.domain.Photo;
 import com.gparente.photoorganizer.domain.Tag;
 import com.gparente.photoorganizer.repository.PhotoRepository;
 import com.gparente.photoorganizer.repository.TagRepository;
+import com.gparente.photoorganizer.service.dto.PhotoDTO;
 import com.gparente.photoorganizer.web.rest.errors.BadRequestAlertException;
 import com.gparente.photoorganizer.web.rest.util.HeaderUtil;
 import com.gparente.photoorganizer.web.rest.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * REST controller for managing Photo.
@@ -35,6 +36,8 @@ import java.util.Set;
 public class PhotoResource {
 
     private final Logger log = LoggerFactory.getLogger(PhotoResource.class);
+
+    private final String PHOTO_BASE_PATH = "images/root";
 
     private static final String ENTITY_NAME = "photo";
 
@@ -98,11 +101,21 @@ public class PhotoResource {
      */
     @GetMapping("/photos")
     @Timed
-    public ResponseEntity<List<Photo>> getAllPhotos(Pageable pageable) {
+    public ResponseEntity<List<PhotoDTO>> getAllPhotos(Pageable pageable) {
         log.debug("REST request to get a page of Photos");
+
         Page<Photo> page = photoRepository.findAllWithEagerRelationships(pageable);
+        List<PhotoDTO> photos = new ArrayList<>();
+        PhotoDTO photoDTO;
+
+        for(Photo photo: page.getContent()) {
+            photoDTO = new PhotoDTO(photo);
+            this.loadImage(photoDTO, true);
+            photos.add(photoDTO);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/photos");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+
+        return new ResponseEntity<>(photos, headers, HttpStatus.OK);
     }
 
     /**
@@ -113,7 +126,7 @@ public class PhotoResource {
      */
     @GetMapping("/photos/tag/{id}")
     @Timed
-    public ResponseEntity<List<Photo>> getAllPhotosByTag(@PathVariable Long id, Pageable pageable) {
+    public ResponseEntity<List<PhotoDTO>> getAllPhotosByTag(@PathVariable Long id, Pageable pageable) {
         log.debug("REST request to get a page of Photos");
 
         Tag tag;
@@ -124,8 +137,18 @@ public class PhotoResource {
         }
 
         Page<Photo> page = photoRepository.findAllByTagWithEagerRelationships(tag, pageable);
+        List<PhotoDTO> photos = new ArrayList<>();
+        PhotoDTO photoDTO;
+
+        for(Photo photo: page.getContent()) {
+            photoDTO = new PhotoDTO(photo);
+            this.loadImage(photoDTO, true);
+            photos.add(photoDTO);
+        }
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/photos");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+
+        return new ResponseEntity<>(photos, headers, HttpStatus.OK);
     }
 
     /**
@@ -136,10 +159,68 @@ public class PhotoResource {
      */
     @GetMapping("/photos/{id}")
     @Timed
-    public ResponseEntity<Photo> getPhoto(@PathVariable Long id) {
+    public ResponseEntity<PhotoDTO> getPhoto(@PathVariable Long id) {
         log.debug("REST request to get Photo : {}", id);
+
         Photo photo = photoRepository.findOneWithEagerRelationships(id);
-        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(photo));
+
+        PhotoDTO photoDTO = new PhotoDTO(photo);
+
+        this.loadImage(photoDTO, true);
+
+        return ResponseUtil.wrapOrNotFound(Optional.of(photoDTO));
+    }
+
+    /**
+     * GET  /photos/:id : get the "id" photo.
+     *
+     * @param id the id of the photo to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the photo, or with status 404 (Not Found)
+     */
+    @GetMapping("/photos/{id}/image")
+    @Timed
+    public ResponseEntity<String> getPhotoImage(@PathVariable Long id) throws IOException {
+        log.debug("REST request to get Photo image : {}", id);
+
+        Photo photo = photoRepository.findOne(id);
+        PhotoDTO photoDTO = new PhotoDTO(photo);
+
+        this.loadImage(photoDTO, false);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return new ResponseEntity<>(photoDTO.getImage(), headers, HttpStatus.OK);
+
+    }
+
+    private void loadImage(PhotoDTO photo, boolean isThumbnail) {
+
+        String fullPath;
+        if (isThumbnail) {
+            fullPath = PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "-thumbnail." + photo.getType();
+        } else {
+            fullPath = PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "." + photo.getType();
+        }
+
+        ClassPathResource resource = new ClassPathResource(fullPath);
+
+        try {
+
+            byte[] media = IOUtils.toByteArray(resource.getInputStream());
+            String image = "data:image/" + photo.getType().toLowerCase() + ";base64," + Base64.getEncoder().encodeToString(media);
+
+            if (isThumbnail) {
+                photo.setThumbnail(image);
+            } else {
+                photo.setImage(image);
+            }
+
+        } catch (IOException e) {
+            log.info("No thumbnail found for photo with id: " + photo.getId());
+            e.printStackTrace();
+        }
+
     }
 
     /**

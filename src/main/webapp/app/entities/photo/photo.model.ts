@@ -7,6 +7,8 @@ export class Photo implements BaseEntity {
         public path?: string,
         public type?: string,
         public dateCreated?: any,
+        public thumbnail?: string,
+        public image?: string,
         public tags?: BaseEntity[],
         public user?: User,
     ) {

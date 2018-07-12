@@ -2,6 +2,7 @@ package com.gparente.photoorganizer.repository;
 
 import com.gparente.photoorganizer.domain.Photo;
 import com.gparente.photoorganizer.domain.Tag;
+import com.gparente.photoorganizer.service.dto.PhotoDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
