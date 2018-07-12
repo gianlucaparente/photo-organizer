@@ -40,6 +40,12 @@ export class PhotoService {
             .map((res: HttpResponse<Photo[]>) => this.convertArrayResponse(res));
     }
 
+    queryByTag(tagId?: number, req?: any): Observable<HttpResponse<Photo[]>> {
+        const options = createRequestOption(req);
+        return this.http.get<Photo[]>(`${this.resourceUrl}/tag/${tagId}`, { params: options, observe: 'response' })
+            .map((res: HttpResponse<Photo[]>) => this.convertArrayResponse(res));
+    }
+
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response'});
     }

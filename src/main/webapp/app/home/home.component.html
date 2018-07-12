@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-1">
+    <div class="col-md-auto">
         <span class="hipster img-fluid rounded"></span>
     </div>
     <div class="col">
@@ -12,11 +12,6 @@
                 <span *ngIf="account" jhiTranslate="home.logged.message"
                     translateValues="{username: '{{account.login}}'}"> You are logged in as user "{{account.login}}". </span>
             </div>
-
-            <div class="alert alert-warning" *ngSwitchCase="false">
-                <span jhiTranslate="global.messages.info.authenticated.prefix">If you want to </span>
-                <a class="alert-link" (click)="login()" jhiTranslate="global.messages.info.authenticated.link">sign in</a><span jhiTranslate="global.messages.info.authenticated.suffix">, you can try the default accounts:<br/>- Administrator (login="admin" and password="admin") <br/>- User (login="user" and password="user").</span>
-            </div>
             <div class="alert alert-warning" *ngSwitchCase="false">
                 <span jhiTranslate="global.messages.info.register.noaccount">You don't have an account yet?</span>
                 <a class="alert-link" routerLink="register" jhiTranslate="global.messages.info.register.link">Register a new account</a>
@@ -25,6 +20,39 @@
 
     </div>
 </div>
-<div class="row" *ngIf="isAuthenticated()">
-    Foto
+<div *ngIf="isAuthenticated()">
+
+    <h4>Your Tags</h4>
+
+    <div class="mb-2">
+        <span style="padding: 0.375rem 0">You are here:</span>
+        <button class="btn btn-link" *ngFor="let tag of history; let i = index;" (click)="clickOnTag(tag)">
+            <span *ngIf="i !== 0" class="fa fa-arrow-right"></span> {{tag.name}}
+        </button>
+    </div>
+
+    <div class="d-flex">
+        <button type="button" class="btn btn-outline-primary mr-2" *ngFor="let tag of tags" (click)="clickOnTag(tag)">
+            <span class="fa fa-image"></span> {{tag.name}}
+        </button>
+        <span *ngIf="tags.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No tags found.</span>
+    </div>
+
+    <h4 class="mt-3">Your Photos</h4>
+
+    <div class="d-flex">
+        <img *ngFor="let photo of photos" style="height: 200px" src="{{getImageSrc(photo)}}" alt="{{photo.fileName + '.' + photo.type}}" class="img-thumbnail">
+        <span *ngIf="photos.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No photo found.</span>
+    </div>
+
+    <div *ngIf="photos && photos.length > 0" class="mt-3">
+        <div class="row justify-content-center">
+            <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
+        </div>
+        <div class="row justify-content-center">
+            <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
+        </div>
+    </div>
+
+
 </div>

@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 
 import { PhotoOrganizerSharedModule } from '../shared';
 
-import { HOME_ROUTE, HomeComponent } from './';
+import { HOME_ROUTE, HomeComponent, HomeResolvePagingParams } from './';
 
 @NgModule({
     imports: [
@@ -16,6 +16,7 @@ import { HOME_ROUTE, HomeComponent } from './';
     entryComponents: [
     ],
     providers: [
+        HomeResolvePagingParams
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

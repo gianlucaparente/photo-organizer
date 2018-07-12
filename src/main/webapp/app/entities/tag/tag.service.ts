@@ -38,6 +38,11 @@ export class TagService {
             .map((res: HttpResponse<Tag[]>) => this.convertArrayResponse(res));
     }
 
+    findSonsOfTag(tagId: number): Observable<HttpResponse<Tag[]>> {
+        return this.http.get<Tag[]>(`${this.resourceUrl}/${tagId}/sons`, { observe: 'response' })
+            .map((res: HttpResponse<Tag[]>) => this.convertArrayResponse(res));
+    }
+
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response'});
     }

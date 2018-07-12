@@ -112,6 +112,28 @@ public class TagResource {
     }
 
     /**
+     * GET  /tags/:id/sons : get the "id" tag.
+     *
+     * @param id the id of the tag to retrieve the sons
+     * @return the ResponseEntity with status 200 (OK) and with body the tags sons, or with status 404 (Not Found)
+     */
+    @GetMapping("/tags/{id}/sons")
+    @Timed
+    public ResponseEntity<List<Tag>> getSonsOfTag(@PathVariable Long id) {
+        log.debug("REST request to get Tag : {}", id);
+
+        Tag tag;
+        if (id == 0) {
+            tag = tagRepository.findRootTag();
+        } else {
+            tag = tagRepository.findOne(id);
+        }
+
+        List<Tag> sonsTags = tagRepository.findSonsOfTag(tag);
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(sonsTags));
+    }
+
+    /**
      * DELETE  /tags/:id : delete the "id" tag.
      *
      * @param id the id of the tag to delete

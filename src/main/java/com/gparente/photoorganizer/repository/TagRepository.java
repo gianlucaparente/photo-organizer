@@ -27,10 +27,12 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
     Page<Tag> findAllWithEagerRelationships(Pageable pageable);
 
     @Query("select tag.parentTag from Tag tag where tag = :tag")
-//    @Query("SELECT t1 " +
-//        "FROM Tag t1 " +
-//        "INNER JOIN Tag t2 " +
-//        "WHERE t1.id = t2.parentTag AND t2 = :tag")
     Tag findParentOfTag(@Param("tag") Tag tag);
+
+    @Query("select tag from Tag tag where tag.parentTag = :tag")
+    List<Tag> findSonsOfTag(@Param("tag") Tag tag);
+
+    @Query("select tag from Tag tag where tag.name = 'ROOT'")
+    Tag findRootTag();
 
 }

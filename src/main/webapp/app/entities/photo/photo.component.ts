@@ -15,7 +15,7 @@ import { ITEMS_PER_PAGE, Principal } from '../../shared';
 })
 export class PhotoComponent implements OnInit, OnDestroy {
 
-currentAccount: any;
+    currentAccount: any;
     photos: Photo[];
     error: any;
     success: any;

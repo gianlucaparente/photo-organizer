@@ -90,36 +90,6 @@ public class PhotoResource {
             .body(result);
     }
 
-    private void setTagsToPhoto(Photo photo) {
-
-        Set<Tag> tags = photo.getTags();
-        Set<Tag> parentsTag = new HashSet<>();
-
-        for (Tag tag: tags) {
-            parentsTag.addAll(this.findParentsOfTag(tag));
-        }
-
-        tags.addAll(parentsTag);
-        photo.setTags(tags);
-
-    }
-
-    private Set<Tag> findParentsOfTag(Tag tag) {
-
-        Set<Tag> results = new HashSet<>();
-
-        if (tag.getParentTag() == null) {
-            return new HashSet<>();
-        }
-
-        Tag parentTag = tagRepository.findParentOfTag(tag);
-        results.add(parentTag);
-        results.addAll(this.findParentsOfTag(parentTag));
-
-        return results;
-
-    }
-
     /**
      * GET  /photos : get all the photos.
      *
@@ -131,6 +101,29 @@ public class PhotoResource {
     public ResponseEntity<List<Photo>> getAllPhotos(Pageable pageable) {
         log.debug("REST request to get a page of Photos");
         Page<Photo> page = photoRepository.findAllWithEagerRelationships(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/photos");
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * GET  /photos : get all the photos.
+     *
+     * @param pageable the pagination information
+     * @return the ResponseEntity with status 200 (OK) and the list of photos in body
+     */
+    @GetMapping("/photos/tag/{id}")
+    @Timed
+    public ResponseEntity<List<Photo>> getAllPhotosByTag(@PathVariable Long id, Pageable pageable) {
+        log.debug("REST request to get a page of Photos");
+
+        Tag tag;
+        if (id == 0) {
+            tag = tagRepository.findRootTag();
+        } else {
+            tag = tagRepository.findOne(id);
+        }
+
+        Page<Photo> page = photoRepository.findAllByTagWithEagerRelationships(tag, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/photos");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -162,4 +155,35 @@ public class PhotoResource {
         photoRepository.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
+
+    private void setTagsToPhoto(Photo photo) {
+
+        Set<Tag> tags = photo.getTags();
+        Set<Tag> parentsTag = new HashSet<>();
+
+        for (Tag tag: tags) {
+            parentsTag.addAll(this.findParentsOfTag(tag));
+        }
+
+        tags.addAll(parentsTag);
+        photo.setTags(tags);
+
+    }
+
+    private Set<Tag> findParentsOfTag(Tag tag) {
+
+        Set<Tag> results = new HashSet<>();
+
+        if (tag.getParentTag() == null) {
+            return new HashSet<>();
+        }
+
+        Tag parentTag = tagRepository.findParentOfTag(tag);
+        results.add(parentTag);
+        results.addAll(this.findParentsOfTag(parentTag));
+
+        return results;
+
+    }
+
 }
