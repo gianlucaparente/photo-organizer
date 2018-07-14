@@ -10,7 +10,8 @@ import { Photo } from './photo.model';
 import { PhotoPopupService } from './photo-popup.service';
 import { PhotoService } from './photo.service';
 import { Tag, TagService } from '../tag';
-import { User, UserService } from '../../shared';
+import { User, UserService, Principal, FILE_EXTENSIONS_ALLOWED } from '../../shared';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
     selector: 'jhi-photo-dialog',
@@ -19,11 +20,14 @@ import { User, UserService } from '../../shared';
 export class PhotoDialogComponent implements OnInit {
 
     photo: Photo;
+    tagSelected: Tag;
     isSaving: boolean;
 
     tags: Tag[];
 
     users: User[];
+
+    currentUser: any;
 
     constructor(
         public activeModal: NgbActiveModal,
@@ -31,16 +35,31 @@ export class PhotoDialogComponent implements OnInit {
         private photoService: PhotoService,
         private tagService: TagService,
         private userService: UserService,
-        private eventManager: JhiEventManager
+        private eventManager: JhiEventManager,
+        private principal: Principal,
+        private sanitizer: DomSanitizer
     ) {
     }
 
     ngOnInit() {
+
         this.isSaving = false;
-        this.tagService.query()
-            .subscribe((res: HttpResponse<Tag[]>) => { this.tags = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
-        this.userService.query()
-            .subscribe((res: HttpResponse<User[]>) => { this.users = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
+
+        this.tagService.query().subscribe((res: HttpResponse<Tag[]>) => {
+            this.tags = res.body;
+            if (this.tagSelected) {
+                this.photo.tags.push(this.tagSelected);
+            }
+        }, (res: HttpErrorResponse) => this.onError(res.message));
+
+        this.userService.query().subscribe((res: HttpResponse<User[]>) => {
+            this.users = res.body;
+        }, (res: HttpErrorResponse) => this.onError(res.message));
+
+        this.principal.identity().then((account) => {
+            this.currentUser = account;
+        });
+
     }
 
     clear() {
@@ -49,13 +68,29 @@ export class PhotoDialogComponent implements OnInit {
 
     save() {
         this.isSaving = true;
-        if (this.photo.id !== undefined) {
-            this.subscribeToSaveResponse(
-                this.photoService.update(this.photo));
-        } else {
-            this.subscribeToSaveResponse(
-                this.photoService.create(this.photo));
+
+        if (!this.photo.user) {
+            this.photo.user = this.currentUser;
         }
+
+        const formData = new FormData();
+
+        if (this.photo.id) {
+            formData.append('photoId', String(this.photo.id));
+        }
+
+        formData.append('image', this.photo.image);
+        formData.append('tagIds', this.photo.tags.map((t: Tag) => t.id).join(','));
+        formData.append('userId', String(this.photo.user.id));
+
+        this.photoService.save(formData, !this.photo.id).subscribe((photo: Photo) => {
+
+            this.eventManager.broadcast({ name: 'photoListModification', content: 'OK'});
+            this.isSaving = false;
+            this.activeModal.dismiss(photo);
+
+        },(res: HttpErrorResponse) => this.onSaveError());
+
     }
 
     private subscribeToSaveResponse(result: Observable<HttpResponse<Photo>>) {
@@ -95,6 +130,31 @@ export class PhotoDialogComponent implements OnInit {
         }
         return option;
     }
+
+    uploadPhoto(evt: any) {
+
+        this.photo.image = evt.target.files[0];
+
+        const nameSplit = this.photo.image.name.split('.');
+
+        this.photo.fileName = nameSplit[0];
+        this.photo.type = nameSplit[1].toLowerCase();
+        this.photo.dateCreated = this.photo.image.lastModifiedDate.toISOString() || new Date().toISOString();
+
+        if (FILE_EXTENSIONS_ALLOWED.indexOf(this.photo.type) > -1) {
+
+            const reader = new FileReader();
+            reader.readAsText(this.photo.image);
+            reader.onload = (event: any) => {
+                this.photo.preview = this.sanitizer.bypassSecurityTrustResourceUrl("data:image/" + this.photo.type + ";base64," + event.target.result);
+            };
+
+        } else {
+            this.jhiAlertService.error('photoOrganizerApp.photo.extError', null, null);
+        }
+
+    }
+
 }
 
 @Component({

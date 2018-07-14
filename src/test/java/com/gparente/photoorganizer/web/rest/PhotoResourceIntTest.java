@@ -5,6 +5,7 @@ import com.gparente.photoorganizer.PhotoOrganizerApp;
 import com.gparente.photoorganizer.domain.Photo;
 import com.gparente.photoorganizer.repository.PhotoRepository;
 import com.gparente.photoorganizer.repository.TagRepository;
+import com.gparente.photoorganizer.repository.UserRepository;
 import com.gparente.photoorganizer.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -60,6 +61,9 @@ public class PhotoResourceIntTest {
     private  TagRepository tagRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -78,7 +82,7 @@ public class PhotoResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PhotoResource photoResource = new PhotoResource(photoRepository, tagRepository);
+        final PhotoResource photoResource = new PhotoResource(photoRepository, tagRepository, userRepository);
         this.restPhotoMockMvc = MockMvcBuilders.standaloneSetup(photoResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

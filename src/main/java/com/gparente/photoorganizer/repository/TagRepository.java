@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import org.springframework.data.jpa.repository.*;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data JPA repository for the Tag entity.
@@ -34,5 +35,8 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
     @Query("select tag from Tag tag where tag.name = 'ROOT'")
     Tag findRootTag();
+
+    @Query("select tag from Tag tag where tag.id in :tagIds")
+    Set<Tag> findAllByIds(@Param("tagIds") List<Long> tagIds);
 
 }

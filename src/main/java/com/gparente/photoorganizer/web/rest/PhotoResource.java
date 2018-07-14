@@ -4,8 +4,10 @@ import com.codahale.metrics.annotation.Timed;
 import com.gparente.photoorganizer.domain.Photo;
 
 import com.gparente.photoorganizer.domain.Tag;
+import com.gparente.photoorganizer.domain.User;
 import com.gparente.photoorganizer.repository.PhotoRepository;
 import com.gparente.photoorganizer.repository.TagRepository;
+import com.gparente.photoorganizer.repository.UserRepository;
 import com.gparente.photoorganizer.service.dto.PhotoDTO;
 import com.gparente.photoorganizer.web.rest.errors.BadRequestAlertException;
 import com.gparente.photoorganizer.web.rest.util.HeaderUtil;
@@ -14,19 +16,21 @@ import io.github.jhipster.web.util.ResponseUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * REST controller for managing Photo.
@@ -37,60 +41,95 @@ public class PhotoResource {
 
     private final Logger log = LoggerFactory.getLogger(PhotoResource.class);
 
-    private static final String PHOTO_BASE_PATH = "images/root";
+    private static final String PHOTO_BASE_PATH = "source";
 
     private static final String ENTITY_NAME = "photo";
 
     private final PhotoRepository photoRepository;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
 
-    public PhotoResource(PhotoRepository photoRepository, TagRepository tagRepository) {
+    public PhotoResource(PhotoRepository photoRepository, TagRepository tagRepository, UserRepository userRepository) {
         this.photoRepository = photoRepository;
         this.tagRepository = tagRepository;
+        this.userRepository = userRepository;
     }
 
     /**
      * POST  /photos : Create a new photo.
      *
-     * @param photo the photo to create
+     * @param image the photo to create
+     * @param tagIds the photo to create
+     * @param userId the photo to create
      * @return the ResponseEntity with status 201 (Created) and with body the new photo, or with status 400 (Bad Request) if the photo has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PostMapping("/photos")
+    @PostMapping("/photos/create")
     @Timed
-    public ResponseEntity<Photo> createPhoto(@RequestBody Photo photo) throws URISyntaxException {
-        log.debug("REST request to save Photo : {}", photo);
-        if (photo.getId() != null) {
-            throw new BadRequestAlertException("A new photo cannot already have an ID", ENTITY_NAME, "idexists");
+    public ResponseEntity<Photo> createPhoto(
+        @RequestParam("image") MultipartFile image,
+        @RequestParam("tagIds") String tagIds,
+        @RequestParam("userId") String userId
+    ) throws Exception {
+        log.debug("REST request to save Photo : {}");
+
+        Photo photo = this.storeImage(image);
+
+        List<Long> tagIdsLong = new ArrayList<>();
+        for (String s: tagIds.split(",")) {
+            tagIdsLong.add(Long.parseLong(s));
         }
-        setTagsToPhoto(photo);
-        Photo result = photoRepository.save(photo);
-        return ResponseEntity.created(new URI("/api/photos/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
-            .body(result);
+
+        Set<Tag> tags = tagRepository.findAllByIds(tagIdsLong);
+        photo.setTags(tags);
+        User user = userRepository.findOne(Long.parseLong(userId));
+        photo.setUser(user);
+        photoRepository.save(photo);
+
+        return ResponseEntity.created(new URI("/api/photos/" + photo.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, photo.getId().toString()))
+            .body(photo);
     }
 
     /**
      * PUT  /photos : Updates an existing photo.
      *
-     * @param photo the photo to update
+     * @param photoId the photo to update
+     * @param image the photo to update
+     * @param tagIds the photo to update
+     * @param userId the photo to update
      * @return the ResponseEntity with status 200 (OK) and with body the updated photo,
      * or with status 400 (Bad Request) if the photo is not valid,
      * or with status 500 (Internal Server Error) if the photo couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
-    @PutMapping("/photos")
+    @PostMapping("/photos/update")
     @Timed
-    public ResponseEntity<Photo> updatePhoto(@RequestBody Photo photo) throws URISyntaxException {
-        log.debug("REST request to update Photo : {}", photo);
-        if (photo.getId() == null) {
-            return createPhoto(photo);
+    public ResponseEntity<Photo> updatePhoto(
+        @RequestParam("photoId") String photoId,
+        @RequestParam("image") MultipartFile image,
+        @RequestParam("tagIds") String tagIds,
+        @RequestParam("userId") String userId
+    ) throws Exception {
+        log.debug("REST request to update Photo : {}");
+
+        Photo oldPhoto = photoRepository.findOneWithEagerRelationships(Long.parseLong(photoId));
+        Photo photo = this.storeImage(image, oldPhoto);
+
+        List<Long> tagIdsLong = new ArrayList<>();
+        for (String s: tagIds.split(",")) {
+            tagIdsLong.add(Long.parseLong(s));
         }
-        setTagsToPhoto(photo);
-        Photo result = photoRepository.save(photo);
+
+        Set<Tag> tags = tagRepository.findAllByIds(tagIdsLong);
+        photo.setTags(tags);
+        User user = userRepository.findOne(Long.parseLong(userId));
+        photo.setUser(user);
+        photoRepository.save(photo);
+
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, photo.getId().toString()))
-            .body(result);
+            .body(photo);
     }
 
     /**
@@ -217,35 +256,6 @@ public class PhotoResource {
 
     }
 
-    private void loadImage(PhotoDTO photo, boolean isThumbnail) {
-
-        String fullPath;
-        if (isThumbnail) {
-            fullPath = PhotoResource.PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "-thumbnail." + photo.getType();
-        } else {
-            fullPath = PhotoResource.PHOTO_BASE_PATH + "/" + photo.getPath() + "/" + photo.getFileName() + "." + photo.getType();
-        }
-
-        ClassPathResource resource = new ClassPathResource(fullPath);
-
-        try {
-
-            byte[] media = IOUtils.toByteArray(resource.getInputStream());
-            String image = "data:image/" + photo.getType().toLowerCase() + ";base64," + Base64.getEncoder().encodeToString(media);
-
-            if (isThumbnail) {
-                photo.setThumbnail(image);
-            } else {
-                photo.setImage(image);
-            }
-
-        } catch (IOException e) {
-            log.info("No thumbnail found for photo with id: " + photo.getId());
-            e.printStackTrace();
-        }
-
-    }
-
     /**
      * DELETE  /photos/:id : delete the "id" photo.
      *
@@ -287,6 +297,81 @@ public class PhotoResource {
         results.addAll(this.findParentsOfTag(parentTag));
 
         return results;
+
+    }
+
+    private void loadImage(PhotoDTO photo, boolean isThumbnail) {
+
+        String fileName;
+        if (isThumbnail) {
+            fileName = photo.getFileName() + "-thumbnail." + photo.getType();
+        } else {
+            fileName = photo.getFileName() + "." + photo.getType();
+        }
+
+        try {
+
+            FileInputStream fileInputStream = new FileInputStream(PhotoResource.PHOTO_BASE_PATH + File.separator + fileName);
+            byte[] media = IOUtils.toByteArray(fileInputStream);
+            String image = "data:image/" + photo.getType().toLowerCase() + ";base64," + Base64.getEncoder().encodeToString(media);
+
+            if (isThumbnail) {
+                photo.setThumbnail(image);
+            } else {
+                photo.setImage(image);
+            }
+
+        } catch (IOException e) {
+            log.info("No image to load found for photo with id: " + photo.getId());
+            e.printStackTrace();
+        }
+
+    }
+
+    private Photo storeImage(MultipartFile image) throws Exception {
+        Photo photo = new Photo();
+        return this.storeImage(image, photo);
+    }
+
+    private Photo storeImage(MultipartFile image, Photo photo) throws Exception {
+
+        if (!image.isEmpty()) {
+
+            try {
+
+                String[] nameSplit = image.getOriginalFilename().split("\\.");
+
+                photo.setFileName(nameSplit[0]);
+                photo.setType(nameSplit[1]);
+
+                byte[] bytes = image.getBytes();
+                File file = new File(PhotoResource.PHOTO_BASE_PATH + File.separator + image.getOriginalFilename());
+                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(file));
+                stream.write(bytes);
+                stream.close();
+
+                log.info("Image stored for photo");
+
+                Image imgThumb = ImageIO.read(file).getScaledInstance(-1, 200, Image.SCALE_SMOOTH);
+                BufferedImage imgBI = new BufferedImage(imgThumb.getWidth(null), imgThumb.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                imgBI.createGraphics().drawImage(imgThumb,0,0,null);
+                ImageIO.write(imgBI, photo.getType(), new File(PhotoResource.PHOTO_BASE_PATH + File.separator + photo.getFileName() + "-thumbnail." + photo.getType()));
+
+                log.info("Thumbnail stored for photo");
+
+            } catch (IOException e) {
+                log.warn("Error in store image file for photo");
+                e.printStackTrace();
+            }
+
+            return photo;
+
+        } else {
+
+            log.info("No image to store found for photo. The image file of request is empty.");
+            throw new Exception("No image to store found for photo. The image file of request is empty.");
+
+        }
 
     }
 

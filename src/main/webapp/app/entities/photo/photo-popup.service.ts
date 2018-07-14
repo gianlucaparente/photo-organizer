@@ -20,7 +20,7 @@ export class PhotoPopupService {
         this.ngbModalRef = null;
     }
 
-    open(component: Component, id?: number | any): Promise<NgbModalRef> {
+    open(component: Component, id?: number | any, tagSelected?: string): Promise<NgbModalRef> {
         return new Promise<NgbModalRef>((resolve, reject) => {
             const isOpen = this.ngbModalRef !== null;
             if (isOpen) {
@@ -33,22 +33,23 @@ export class PhotoPopupService {
                         const photo: Photo = photoResponse.body;
                         photo.dateCreated = this.datePipe
                             .transform(photo.dateCreated, 'yyyy-MM-ddTHH:mm:ss');
-                        this.ngbModalRef = this.photoModalRef(component, photo);
+                        this.ngbModalRef = this.photoModalRef(component, photo, tagSelected);
                         resolve(this.ngbModalRef);
                     });
             } else {
                 // setTimeout used as a workaround for getting ExpressionChangedAfterItHasBeenCheckedError
                 setTimeout(() => {
-                    this.ngbModalRef = this.photoModalRef(component, new Photo());
+                    this.ngbModalRef = this.photoModalRef(component, new Photo(), tagSelected);
                     resolve(this.ngbModalRef);
                 }, 0);
             }
         });
     }
 
-    photoModalRef(component: Component, photo: Photo): NgbModalRef {
+    photoModalRef(component: Component, photo: Photo, tagSelected?: string): NgbModalRef {
         const modalRef = this.modalService.open(component, { size: 'lg', backdrop: 'static'});
         modalRef.componentInstance.photo = photo;
+        modalRef.componentInstance.tagSelected = tagSelected;
         modalRef.result.then((result) => {
             this.router.navigate([{ outlets: { popup: null }}], { replaceUrl: true, queryParamsHandling: 'merge' });
             this.ngbModalRef = null;

@@ -1,6 +1,8 @@
 package com.gparente.photoorganizer.domain;
 
 
+import com.gparente.photoorganizer.service.dto.PhotoDTO;
+
 import javax.persistence.*;
 
 import java.io.Serializable;
@@ -42,6 +44,18 @@ public class Photo implements Serializable {
 
     @ManyToOne
     private User user;
+
+    public Photo() {}
+
+    public Photo(PhotoDTO photoDTO) {
+        this.id = photoDTO.getId();
+        this.fileName = photoDTO.getFileName();
+        this.path = photoDTO.getPath();
+        this.type = photoDTO.getType();
+        this.dateCreated = photoDTO.getDateCreated();
+        this.tags = photoDTO.getTags();
+        this.user = photoDTO.getUser();
+    }
 
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {

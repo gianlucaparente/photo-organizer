@@ -21,7 +21,9 @@
             "type": "Type",
             "dateCreated": "Date Created",
             "tags": "Tags",
-            "user": "User"
+            "user": "User",
+            "uploadPhoto": "Carica Foto",
+            "extError": "Formato non valido. I formati accettati sono jpg, jpeg e png."
         }
     }
 }

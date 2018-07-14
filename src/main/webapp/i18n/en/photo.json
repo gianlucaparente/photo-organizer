@@ -21,7 +21,9 @@
             "type": "Type",
             "dateCreated": "Date Created",
             "tags": "Tags",
-            "user": "User"
+            "user": "User",
+            "uploadPhoto": "Upload Photo",
+            "extError": "File extension not allowed. The valid extension are jpg, jpeg e png."
         }
     }
 }
