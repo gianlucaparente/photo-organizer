@@ -20,11 +20,23 @@ export class PhotoService {
     save(formData: FormData, create: boolean): Observable<any> {
 
         if (create) {
-            return this.http.post(this.resourceUrl + "/create", formData);
+            return this.http.post(this.resourceUrl + '/create', formData);
         } else {
-            return this.http.post(this.resourceUrl + "/update", formData);
+            return this.http.post(this.resourceUrl + '/update', formData);
         }
 
+    }
+
+    create(photo: Photo): Observable<EntityResponseType> {
+        const copy = this.convert(photo);
+        return this.http.post<Photo>(this.resourceUrl, copy, { observe: 'response' })
+            .map((res: EntityResponseType) => this.convertResponse(res));
+    }
+
+    update(photo: Photo): Observable<EntityResponseType> {
+        const copy = this.convert(photo);
+        return this.http.put<Photo>(this.resourceUrl, copy, { observe: 'response' })
+            .map((res: EntityResponseType) => this.convertResponse(res));
     }
 
     find(id: number): Observable<EntityResponseType> {

@@ -89,7 +89,7 @@ export class PhotoDialogComponent implements OnInit {
             this.isSaving = false;
             this.activeModal.dismiss(photo);
 
-        },(res: HttpErrorResponse) => this.onSaveError());
+        }, (res: HttpErrorResponse) => this.onSaveError());
 
     }
 
@@ -144,9 +144,9 @@ export class PhotoDialogComponent implements OnInit {
         if (FILE_EXTENSIONS_ALLOWED.indexOf(this.photo.type) > -1) {
 
             const reader = new FileReader();
-            reader.readAsText(this.photo.image);
+            reader.readAsDataURL(this.photo.image);
             reader.onload = (event: any) => {
-                this.photo.preview = this.sanitizer.bypassSecurityTrustResourceUrl("data:image/" + this.photo.type + ";base64," + event.target.result);
+                this.photo.preview = event.target.result;
             };
 
         } else {
