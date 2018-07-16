@@ -49,6 +49,12 @@ only screen and (                min-resolution: 2dppx) {
         width: 98%;
         height: auto;
         margin-bottom: 6px;
+        cursor: pointer;
+    }
+
+    .photo:hover {
+        cursor: pointer;
+        opacity: 0.8;
     }
 }
 
