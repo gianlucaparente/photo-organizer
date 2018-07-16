@@ -22,20 +22,24 @@
 </div>
 <div *ngIf="isAuthenticated()">
 
-    <h3 class="my-3">
-        <span style="vertical-align: middle">Your Tags</span>
-        <button
-            *ngIf="getTagSelected()"
-            type="button"
-            class="btn btn-link jh-create-entity create-photo"
-            [routerLink]="['/', { outlets: { popup: 'tag-new/' + getTagSelected().id } }]"
-            replaceUrl="true"
-            queryParamsHandling="merge">
-            <span class="fa fa-plus"></span>
-        </button>
-        <button class="btn btn-link" *ngFor="let tag of history; let i = index;" (click)="clickOnTag(tag)">
-            <span *ngIf="i !== 0" class="fa fa-arrow-right"></span> {{tag.name}}
-        </button>
+    <h3 class="d-flex justify-content-sm-between my-3 border-bottom">
+        <div class="d-flex align-items-baseline">
+            <span class="mr-2">Your Tags</span>
+            <button class="btn btn-link px-1 py-0" *ngFor="let tag of history; let i = index;" (click)="clickOnTag(tag)">
+                <span *ngIf="i !== 0" class="fa fa-arrow-right"></span> {{tag.name}}
+            </button>
+        </div>
+        <div>
+            <button
+                *ngIf="getTagSelected()"
+                type="button"
+                class="btn btn-link jh-create-entity create-photo"
+                [routerLink]="['/', { outlets: { popup: 'tag-new/' + getTagSelected().id } }]"
+                replaceUrl="true"
+                queryParamsHandling="merge">
+                <span class="fa fa-plus"></span>
+            </button>
+        </div>
     </h3>
 
     <div class="d-flex">
@@ -45,8 +49,8 @@
         <span *ngIf="tags && tags.length === 0">No tags found.</span>
     </div>
 
-    <h3 class="my-3">
-        <span style="vertical-align: middle">Your Photos ({{photos ? photos.length : '0'}})</span>
+    <h3 class="d-flex justify-content-sm-between my-3 border-bottom">
+        <span>Your Photos ({{photos ? photos.length : '0'}})</span>
         <button
             *ngIf="getTagSelected()"
             type="button"
