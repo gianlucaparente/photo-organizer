@@ -52,6 +52,9 @@ public class TagResourceIntTest {
     private PhotoRepository photoRepository;
 
     @Autowired
+    private PhotoResource photoResource;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -70,7 +73,7 @@ public class TagResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final TagResource tagResource = new TagResource(tagRepository, photoRepository);
+        final TagResource tagResource = new TagResource(tagRepository, photoRepository, photoResource);
         this.restTagMockMvc = MockMvcBuilders.standaloneSetup(tagResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

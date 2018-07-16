@@ -272,6 +272,9 @@ public class PhotoResource {
     @Timed
     public ResponseEntity<Void> deletePhoto(@PathVariable Long id) {
         log.debug("REST request to delete Photo : {}", id);
+        Photo photo = this.photoRepository.findOne(id);
+        deleteThumbnail(photo);
+        deleteImage(photo);
         photoRepository.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
@@ -377,6 +380,32 @@ public class PhotoResource {
             log.info("No image to store found for photo. The image file of request is empty.");
             throw new Exception("No image to store found for photo. The image file of request is empty.");
 
+        }
+
+    }
+
+    private void deleteImage(Photo photo) {
+
+        String fileName = photo.getFileName() + "." + photo.getType();
+        File file = new File(PhotoResource.PHOTO_BASE_PATH + File.separator + fileName);
+
+        if(file.delete()){
+            log.info("Image of photo " + photo + " with name " + fileName + " is deleted.");
+        }else{
+            log.info("No image found to delete for photo " + photo);
+        }
+
+    }
+
+    private void deleteThumbnail(Photo photo) {
+
+        String fileName = photo.getFileName() + "-thumbnail." + photo.getType();
+        File file = new File(PhotoResource.PHOTO_BASE_PATH + File.separator + fileName);
+
+        if(file.delete()){
+            log.info("Thumbnail of photo " + photo + " with name " + fileName + " is deleted.");
+        }else{
+            log.info("No Thumbnail found to delete for photo " + photo);
         }
 
     }

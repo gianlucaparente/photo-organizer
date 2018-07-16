@@ -38,10 +38,12 @@ public class TagResource {
 
     private final TagRepository tagRepository;
     private final PhotoRepository photoRepository;
+    private final PhotoResource photoResource;
 
-    public TagResource(TagRepository tagRepository, PhotoRepository photoRepository) {
+    public TagResource(TagRepository tagRepository, PhotoRepository photoRepository, PhotoResource photoResource) {
         this.tagRepository = tagRepository;
         this.photoRepository = photoRepository;
+        this.photoResource = photoResource;
     }
 
     /**
@@ -183,7 +185,7 @@ public class TagResource {
         for (Photo photo: photos) {
             photo.getTags().remove(tag);
             if (photo.getTags().size() == 0) {
-                this.photoRepository.delete(photo.getId());
+                this.photoResource.deletePhoto(photo.getId());
             }
         }
 
