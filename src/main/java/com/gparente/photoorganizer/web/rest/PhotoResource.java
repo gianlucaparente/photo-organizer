@@ -361,7 +361,7 @@ public class PhotoResource {
 
                 log.info("Image stored for photo");
 
-                Image imgThumb = ImageIO.read(file).getScaledInstance(-1, 200, Image.SCALE_SMOOTH);
+                Image imgThumb = ImageIO.read(file).getScaledInstance(400, -1, Image.SCALE_SMOOTH);
                 BufferedImage imgBI = new BufferedImage(imgThumb.getWidth(null), imgThumb.getHeight(null), BufferedImage.TYPE_INT_RGB);
                 imgBI.createGraphics().drawImage(imgThumb,0,0,null);
                 ImageIO.write(imgBI, photo.getType(), new File(PhotoResource.PHOTO_BASE_PATH + File.separator + photo.getFileName() + "-thumbnail." + photo.getType()));

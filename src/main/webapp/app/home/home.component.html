@@ -55,8 +55,8 @@
         <button type="button" class="btn btn-outline-primary mr-2" *ngFor="let tag of tags" (click)="clickOnTag(tag)">
             <span class="fa fa-image"></span> {{tag.name}}
         </button>
-        <span *ngIf="tags && tags.length === 0">No tags found.</span>
     </div>
+    <div *ngIf="tags && tags.length === 0">No tags found.</div>
 
     <h3 class="d-flex justify-content-sm-between my-3 border-bottom">
         <span>Your Photos ({{photos ? photos.length : '0'}})</span>
@@ -71,12 +71,12 @@
         </button>
     </h3>
 
-    <div class="d-flex">
-        <img *ngFor="let photo of photos" style="height: 200px" [src]="photo.thumbnail" alt="{{photo.fileName + '.' + photo.type}}" class="img-thumbnail">
-        <span *ngIf="photos && photos.length === 0">No photo found.</span>
+    <div *ngIf="photos" [ngClass]="{ 'photos': photos.length > 6, 'photos-lower-6': photos.length <= 6 }">
+        <img *ngFor="let photo of photos" class="photo" [src]="photo.thumbnail" alt="{{photo.fileName + '.' + photo.type}}">
     </div>
+    <div *ngIf="photos && photos.length === 0">No photo found.</div>
 
-    <div *ngIf="photos && photos.length > 0" class="mt-3">
+    <div *ngIf="photos && photos.length > 0" class="w-100 mt-3 float-left">
         <div class="row justify-content-center">
             <jhi-item-count [page]="page" [total]="queryCount" [maxSize]="5" [itemsPerPage]="itemsPerPage"></jhi-item-count>
         </div>
@@ -84,6 +84,5 @@
             <ngb-pagination [collectionSize]="totalItems" [(page)]="page" [pageSize]="itemsPerPage" [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage(page)"></ngb-pagination>
         </div>
     </div>
-
 
 </div>
