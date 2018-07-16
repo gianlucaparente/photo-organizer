@@ -10,7 +10,7 @@ import { Tag } from './tag.model';
 import { TagPopupService } from './tag-popup.service';
 import { TagService } from './tag.service';
 import { Photo, PhotoService } from '../photo';
-import { User, UserService } from '../../shared';
+import { UserService, Principal, User } from '../../shared';
 
 @Component({
     selector: 'jhi-tag-dialog',
@@ -20,11 +20,8 @@ export class TagDialogComponent implements OnInit {
 
     tag: Tag;
     isSaving: boolean;
-
     photos: Photo[];
-
     users: User[];
-
     parenttags: Tag[];
     parentTag: Tag;
 
@@ -33,8 +30,9 @@ export class TagDialogComponent implements OnInit {
         private jhiAlertService: JhiAlertService,
         private tagService: TagService,
         private photoService: PhotoService,
-        private userService: UserService,
-        private eventManager: JhiEventManager
+        private principal: Principal,
+        private eventManager: JhiEventManager,
+        private userService: UserService
     ) {
     }
 
@@ -42,8 +40,12 @@ export class TagDialogComponent implements OnInit {
         this.isSaving = false;
         this.photoService.query()
             .subscribe((res: HttpResponse<Photo[]>) => { this.photos = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
-        this.userService.query()
-            .subscribe((res: HttpResponse<User[]>) => { this.users = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
+        this.principal.identity().then((account) => {
+            this.tag.user = account;
+        });
+        this.userService.query().subscribe((res: HttpResponse<User[]>) => {
+            this.users = res.body;
+        }, (res: HttpErrorResponse) => this.onError(res.message));
 
         this.tagService.query()
             .subscribe((res: HttpResponse<Tag[]>) => {
@@ -52,7 +54,6 @@ export class TagDialogComponent implements OnInit {
                     this.tag.parentTag = this.parentTag;
                 }
             }, (res: HttpErrorResponse) => this.onError(res.message));
-
     }
 
     clear() {

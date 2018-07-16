@@ -22,12 +22,8 @@ export class PhotoDialogComponent implements OnInit {
     photo: Photo;
     tagSelected: Tag;
     isSaving: boolean;
-
     tags: Tag[];
-
     users: User[];
-
-    currentUser: any;
 
     constructor(
         public activeModal: NgbActiveModal,
@@ -36,8 +32,7 @@ export class PhotoDialogComponent implements OnInit {
         private tagService: TagService,
         private userService: UserService,
         private eventManager: JhiEventManager,
-        private principal: Principal,
-        private sanitizer: DomSanitizer
+        private principal: Principal
     ) {
     }
 
@@ -60,7 +55,7 @@ export class PhotoDialogComponent implements OnInit {
         }, (res: HttpErrorResponse) => this.onError(res.message));
 
         this.principal.identity().then((account) => {
-            this.currentUser = account;
+            this.photo.user = account;
         });
 
     }
@@ -71,10 +66,6 @@ export class PhotoDialogComponent implements OnInit {
 
     save() {
         this.isSaving = true;
-
-        if (!this.photo.user) {
-            this.photo.user = this.currentUser;
-        }
 
         const formData = new FormData();
 

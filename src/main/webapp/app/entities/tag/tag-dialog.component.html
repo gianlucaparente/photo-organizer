@@ -17,19 +17,15 @@
             <input type="text" class="form-control" name="name" id="field_name"
                 [(ngModel)]="tag.name" />
         </div>
-        <div class="form-group">
-            <label class="form-control-label" jhiTranslate="photoOrganizerApp.tag.type" for="field_type">Type</label>
-            <input type="text" class="form-control" name="type" id="field_type"
-                [(ngModel)]="tag.type" />
-        </div>
 
-        <div class="form-group">
+        <div class="form-group" *jhiHasAnyAuthority="'ROLE_ADMIN'">
             <label class="form-control-label" jhiTranslate="photoOrganizerApp.tag.user" for="field_user">User</label>
             <select class="form-control" id="field_user" name="user" [(ngModel)]="tag.user" >
                 <option [ngValue]="null"></option>
                 <option [ngValue]="userOption.id === tag.user?.id ? tag.user : userOption" *ngFor="let userOption of users; trackBy: trackUserById">{{userOption.login}}</option>
             </select>
         </div>
+
         <div class="form-group">
             <label class="form-control-label" jhiTranslate="photoOrganizerApp.tag.parentTag" for="field_parentTag">Parent Tag</label>
             <select class="form-control" id="field_parentTag" name="parentTag" [(ngModel)]="tag.parentTag">
