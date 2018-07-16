@@ -36,7 +36,7 @@ public class Photo implements Serializable {
     @Column(name = "date_created")
     private Instant dateCreated;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.DETACH)
     @JoinTable(name = "photo_tags",
                joinColumns = @JoinColumn(name="photos_id", referencedColumnName="id"),
                inverseJoinColumns = @JoinColumn(name="tags_id", referencedColumnName="id"))

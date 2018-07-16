@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data JPA repository for the Photo entity.
@@ -35,6 +36,9 @@ public interface PhotoRepository extends JpaRepository<Photo, Long> {
         countQuery = "select count(distinct photo) from Photo photo where :tag member of photo.tags"
     )
     Page<Photo> findAllByTagWithEagerRelationships(@Param("tag") Tag tag, Pageable pageable);
+
+    @Query("select distinct photo from Photo photo left join fetch photo.tags where :tag member of photo.tags")
+    Set<Photo> findAllByTagWithEagerRelationships(@Param("tag") Tag tag);
 
     @Query("select photo from Photo photo left join fetch photo.tags where photo.id =:id")
     Photo findOneWithEagerRelationships(@Param("id") Long id);

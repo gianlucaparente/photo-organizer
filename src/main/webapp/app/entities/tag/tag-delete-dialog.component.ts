@@ -31,7 +31,7 @@ export class TagDeleteDialogComponent {
         this.tagService.delete(id).subscribe((response) => {
             this.eventManager.broadcast({
                 name: 'tagListModification',
-                content: 'Deleted an tag'
+                content: false
             });
             this.activeModal.dismiss(true);
         });

@@ -77,7 +77,16 @@ export class HomeComponent implements OnInit {
     }
 
     registerChangeInTags() {
-        this.eventManager.subscribe('tagListModification', (response) => this.selectTag(this.getTagSelected()));
+        this.eventManager.subscribe('tagListModification', (response: any) => {
+
+            if (response.content) {
+                this.selectTag(this.getTagSelected());
+            } else {
+                const parentLastTag = this.history[this.history.length - 2];
+                this.selectTag(parentLastTag);
+            }
+
+        });
     }
 
     registerAuthenticationSuccess() {

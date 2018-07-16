@@ -18,6 +18,12 @@ import java.util.Set;
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {
 
+    @Query("select tag from Tag tag left join fetch tag.photos where tag.id = :id")
+    Tag findOneWithEagerRelationships(@Param("id") Long id);
+
+    @Query("select tag from Tag tag left join fetch tag.photos where tag.name = 'ROOT'")
+    Tag findRootTagWithEagerRelationships();
+
     @Query("select tag from Tag tag where tag.user.login = ?#{principal.username}")
     List<Tag> findByUserIsCurrentUser();
 
@@ -30,8 +36,8 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
     @Query("select tag.parentTag from Tag tag where tag = :tag")
     Tag findParentOfTag(@Param("tag") Tag tag);
 
-    @Query("select tag from Tag tag where tag.parentTag = :tag")
-    List<Tag> findSonsOfTag(@Param("tag") Tag tag);
+    @Query("select distinct tag from Tag tag where tag.parentTag = :tag")
+    Set<Tag> findSonsOfTag(@Param("tag") Tag tag);
 
     @Query("select tag from Tag tag where tag.name = 'ROOT'")
     Tag findRootTag();

@@ -28,7 +28,7 @@ public class Tag implements Serializable {
     @Column(name = "jhi_type")
     private String type;
 
-    @ManyToMany(mappedBy = "tags", cascade = CascadeType.REMOVE)
+    @ManyToMany(mappedBy = "tags", cascade = CascadeType.DETACH)
     private Set<Photo> photos = new HashSet<>();
 
     @ManyToOne

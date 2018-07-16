@@ -77,7 +77,7 @@ export class TagDialogComponent implements OnInit {
     }
 
     private onSaveSuccess(result: Tag) {
-        this.eventManager.broadcast({ name: 'tagListModification', content: 'OK'});
+        this.eventManager.broadcast({ name: 'tagListModification', content: true});
         this.isSaving = false;
         this.activeModal.dismiss(result);
     }

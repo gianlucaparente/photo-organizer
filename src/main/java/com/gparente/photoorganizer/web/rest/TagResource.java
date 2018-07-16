@@ -1,8 +1,10 @@
 package com.gparente.photoorganizer.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.gparente.photoorganizer.domain.Photo;
 import com.gparente.photoorganizer.domain.Tag;
 
+import com.gparente.photoorganizer.repository.PhotoRepository;
 import com.gparente.photoorganizer.repository.TagRepository;
 import com.gparente.photoorganizer.web.rest.errors.BadRequestAlertException;
 import com.gparente.photoorganizer.web.rest.util.HeaderUtil;
@@ -15,13 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * REST controller for managing Tag.
@@ -35,9 +37,11 @@ public class TagResource {
     private static final String ENTITY_NAME = "tag";
 
     private final TagRepository tagRepository;
+    private final PhotoRepository photoRepository;
 
-    public TagResource(TagRepository tagRepository) {
+    public TagResource(TagRepository tagRepository, PhotoRepository photoRepository) {
         this.tagRepository = tagRepository;
+        this.photoRepository = photoRepository;
     }
 
     /**
@@ -119,10 +123,10 @@ public class TagResource {
      */
     @GetMapping("/tags/{id}/sons")
     @Timed
-    public ResponseEntity<List<Tag>> getSonsOfTag(@PathVariable Long id) {
+    public ResponseEntity<Set<Tag>> getSonsOfTag(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
         Tag tag = findTagById(id);
-        List<Tag> sonsTags = tagRepository.findSonsOfTag(tag);
+        Set<Tag> sonsTags = tagRepository.findSonsOfTag(tag);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(sonsTags));
     }
 
@@ -134,11 +138,57 @@ public class TagResource {
      */
     @DeleteMapping("/tags/{id}")
     @Timed
+    @Transactional
     public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
         log.debug("REST request to delete Tag : {}", id);
-        Tag tag = findTagById(id);
-        tagRepository.delete(tag.getId());
+        Tag tag = findTagByIdWithEagerRelationships(id);
+
+        Set<Tag> tagsDeleted = this.deleteRecursively(tag);
+        log.info("Tags deleted: " + tagsDeleted.toString());
+
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
+
+    private Set<Tag> deleteRecursively(Tag tag) {
+
+        Set<Tag> sonsTags = tagRepository.findSonsOfTag(tag);
+
+        if (sonsTags.isEmpty()) {
+
+            this.deleteSingleTagAndPhotos(tag);
+
+            Set<Tag> tags = new HashSet<>();
+            tags.add(tag);
+
+            return tags;
+        }
+
+        Set<Tag> tagsDeleted = new HashSet<>();
+        for(Tag tagSon: sonsTags) {
+            tagsDeleted.addAll(deleteRecursively(tagSon));
+        }
+
+        this.deleteSingleTagAndPhotos(tag);
+
+        tagsDeleted.add(tag);
+
+        return tagsDeleted;
+
+    }
+
+    private void deleteSingleTagAndPhotos(Tag tag) {
+
+        Set<Photo> photos = this.photoRepository.findAllByTagWithEagerRelationships(tag);
+
+        for (Photo photo: photos) {
+            photo.getTags().remove(tag);
+            if (photo.getTags().size() == 0) {
+                this.photoRepository.delete(photo.getId());
+            }
+        }
+
+        tagRepository.delete(tag.getId());
+
     }
 
     private Tag findTagById(Long id) {
@@ -148,4 +198,13 @@ public class TagResource {
             return tagRepository.findOne(id);
         }
     }
+
+    private Tag findTagByIdWithEagerRelationships(Long id) {
+        if (id == 0) {
+            return tagRepository.findRootTagWithEagerRelationships();
+        } else {
+            return tagRepository.findOneWithEagerRelationships(id);
+        }
+    }
+
 }

@@ -107,14 +107,20 @@ public class PhotoResource {
     @Timed
     public ResponseEntity<Photo> updatePhoto(
         @RequestParam("photoId") String photoId,
-        @RequestParam("image") MultipartFile image,
+        @RequestParam(value = "image", required = false) MultipartFile image,
         @RequestParam("tagIds") String tagIds,
         @RequestParam("userId") String userId
     ) throws Exception {
         log.debug("REST request to update Photo : {}");
 
         Photo oldPhoto = photoRepository.findOneWithEagerRelationships(Long.parseLong(photoId));
-        Photo photo = this.storeImage(image, oldPhoto);
+
+        Photo photo;
+        if (image != null) {
+            photo = this.storeImage(image, oldPhoto);
+        } else {
+            photo = oldPhoto;
+        }
 
         List<Long> tagIdsLong = new ArrayList<>();
         for (String s: tagIds.split(",")) {
