@@ -68,6 +68,16 @@ export class HomeComponent implements OnInit {
             }
         });
         this.registerAuthenticationSuccess();
+        this.registerChangeInPhotos();
+        this.registerChangeInTags();
+    }
+
+    registerChangeInPhotos() {
+        this.eventManager.subscribe('photoListModification', (response) => this.loadPhotos(this.getTagSelected()));
+    }
+
+    registerChangeInTags() {
+        this.eventManager.subscribe('tagListModification', (response) => this.selectTag(this.getTagSelected()));
     }
 
     registerAuthenticationSuccess() {

@@ -22,27 +22,45 @@
 </div>
 <div *ngIf="isAuthenticated()">
 
-    <h4>Your Tags</h4>
-
-    <div class="mb-2">
-        <span style="padding: 0.375rem 0">You are here:</span>
+    <h3 class="my-3">
+        <span style="vertical-align: middle">Your Tags</span>
+        <button
+            *ngIf="getTagSelected()"
+            type="button"
+            class="btn btn-link jh-create-entity create-photo"
+            [routerLink]="['/', { outlets: { popup: 'tag-new/' + getTagSelected().id } }]"
+            replaceUrl="true"
+            queryParamsHandling="merge">
+            <span class="fa fa-plus"></span>
+        </button>
         <button class="btn btn-link" *ngFor="let tag of history; let i = index;" (click)="clickOnTag(tag)">
             <span *ngIf="i !== 0" class="fa fa-arrow-right"></span> {{tag.name}}
         </button>
-    </div>
+    </h3>
 
     <div class="d-flex">
         <button type="button" class="btn btn-outline-primary mr-2" *ngFor="let tag of tags" (click)="clickOnTag(tag)">
             <span class="fa fa-image"></span> {{tag.name}}
         </button>
-        <span *ngIf="tags && tags.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No tags found.</span>
+        <span *ngIf="tags && tags.length === 0">No tags found.</span>
     </div>
 
-    <h4 class="mt-3">Your Photos</h4>
+    <h3 class="my-3">
+        <span style="vertical-align: middle">Your Photos ({{photos ? photos.length : '0'}})</span>
+        <button
+            *ngIf="getTagSelected()"
+            type="button"
+            class="btn btn-link jh-create-entity create-photo"
+            [routerLink]="['/', { outlets: { popup: 'photo-new/' + getTagSelected().id } }]"
+            replaceUrl="true"
+            queryParamsHandling="merge">
+            <span class="fa fa-plus"></span>
+        </button>
+    </h3>
 
     <div class="d-flex">
         <img *ngFor="let photo of photos" style="height: 200px" [src]="photo.thumbnail" alt="{{photo.fileName + '.' + photo.type}}" class="img-thumbnail">
-        <span *ngIf="photos && photos.length === 0" style="margin-bottom: 2px; padding: 0.375rem 0">No photo found.</span>
+        <span *ngIf="photos && photos.length === 0">No photo found.</span>
     </div>
 
     <div *ngIf="photos && photos.length > 0" class="mt-3">

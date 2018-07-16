@@ -107,7 +107,7 @@ public class TagResource {
     @Timed
     public ResponseEntity<Tag> getTag(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
-        Tag tag = tagRepository.findOne(id);
+        Tag tag = findTagById(id);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(tag));
     }
 
@@ -121,14 +121,7 @@ public class TagResource {
     @Timed
     public ResponseEntity<List<Tag>> getSonsOfTag(@PathVariable Long id) {
         log.debug("REST request to get Tag : {}", id);
-
-        Tag tag;
-        if (id == 0) {
-            tag = tagRepository.findRootTag();
-        } else {
-            tag = tagRepository.findOne(id);
-        }
-
+        Tag tag = findTagById(id);
         List<Tag> sonsTags = tagRepository.findSonsOfTag(tag);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(sonsTags));
     }
@@ -143,7 +136,16 @@ public class TagResource {
     @Timed
     public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
         log.debug("REST request to delete Tag : {}", id);
-        tagRepository.delete(id);
+        Tag tag = findTagById(id);
+        tagRepository.delete(tag.getId());
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
+    }
+
+    private Tag findTagById(Long id) {
+        if (id == 0) {
+            return tagRepository.findRootTag();
+        } else {
+            return tagRepository.findOne(id);
+        }
     }
 }

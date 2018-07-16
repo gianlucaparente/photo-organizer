@@ -48,6 +48,9 @@ export class PhotoDialogComponent implements OnInit {
         this.tagService.query().subscribe((res: HttpResponse<Tag[]>) => {
             this.tags = res.body;
             if (this.tagSelected) {
+                if (!this.photo.tags) {
+                    this.photo.tags = [];
+                }
                 this.photo.tags.push(this.tagSelected);
             }
         }, (res: HttpErrorResponse) => this.onError(res.message));
@@ -172,13 +175,9 @@ export class PhotoPopupComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.routeSub = this.route.params.subscribe((params) => {
-            if ( params['id'] ) {
-                this.photoPopupService
-                    .open(PhotoDialogComponent as Component, params['id']);
-            } else {
-                this.photoPopupService
-                    .open(PhotoDialogComponent as Component);
-            }
+            const id = params['id'] ? params['id'] : undefined;
+            const tagId = params['tagId'] ? params['tagId'] : undefined;
+            this.photoPopupService.open(PhotoDialogComponent as Component, id, tagId);
         });
     }
 

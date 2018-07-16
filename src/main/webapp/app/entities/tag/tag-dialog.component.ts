@@ -26,6 +26,7 @@ export class TagDialogComponent implements OnInit {
     users: User[];
 
     parenttags: Tag[];
+    parentTag: Tag;
 
     constructor(
         public activeModal: NgbActiveModal,
@@ -43,19 +44,15 @@ export class TagDialogComponent implements OnInit {
             .subscribe((res: HttpResponse<Photo[]>) => { this.photos = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
         this.userService.query()
             .subscribe((res: HttpResponse<User[]>) => { this.users = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
-        this.tagService
-            .query({filter: 'parenttag-is-null'})
+
+        this.tagService.query()
             .subscribe((res: HttpResponse<Tag[]>) => {
-                if (!this.tag.parentTag || !this.tag.parentTag.id) {
-                    this.parenttags = res.body;
-                } else {
-                    this.tagService
-                        .find(this.tag.parentTag.id)
-                        .subscribe((subRes: HttpResponse<Tag>) => {
-                            this.parenttags = [subRes.body].concat(res.body);
-                        }, (subRes: HttpErrorResponse) => this.onError(subRes.message));
+                this.parenttags = res.body;
+                if (!this.tag.parentTag && this.parentTag) {
+                    this.tag.parentTag = this.parentTag;
                 }
             }, (res: HttpErrorResponse) => this.onError(res.message));
+
     }
 
     clear() {
@@ -131,13 +128,9 @@ export class TagPopupComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.routeSub = this.route.params.subscribe((params) => {
-            if ( params['id'] ) {
-                this.tagPopupService
-                    .open(TagDialogComponent as Component, params['id']);
-            } else {
-                this.tagPopupService
-                    .open(TagDialogComponent as Component);
-            }
+            const id = params['id'] ? params['id'] : undefined;
+            const parentTagId = params['parentTagId'] ? params['parentTagId'] : undefined;
+            this.tagPopupService.open(TagDialogComponent as Component, id, parentTagId);
         });
     }
 

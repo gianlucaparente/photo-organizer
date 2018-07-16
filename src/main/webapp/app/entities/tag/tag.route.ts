@@ -59,6 +59,16 @@ export const tagPopupRoute: Routes = [
         outlet: 'popup'
     },
     {
+        path: 'tag-new/:parentTagId',
+        component: TagPopupComponent,
+        data: {
+            authorities: ['ROLE_USER'],
+            pageTitle: 'photoOrganizerApp.tag.home.title'
+        },
+        canActivate: [UserRouteAccessService],
+        outlet: 'popup'
+    },
+    {
         path: 'tag/:id/edit',
         component: TagPopupComponent,
         data: {
