@@ -87,17 +87,6 @@ export class PhotoDialogComponent implements OnInit {
 
     }
 
-    private subscribeToSaveResponse(result: Observable<HttpResponse<Photo>>) {
-        result.subscribe((res: HttpResponse<Photo>) =>
-            this.onSaveSuccess(res.body), (res: HttpErrorResponse) => this.onSaveError());
-    }
-
-    private onSaveSuccess(result: Photo) {
-        this.eventManager.broadcast({ name: 'photoListModification', content: 'OK'});
-        this.isSaving = false;
-        this.activeModal.dismiss(result);
-    }
-
     private onSaveError() {
         this.isSaving = false;
     }
