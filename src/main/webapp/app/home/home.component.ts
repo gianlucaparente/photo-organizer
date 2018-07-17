@@ -29,6 +29,7 @@ export class HomeComponent implements OnInit {
     };
     history: Tag[];
     photos: Photo[];
+    photosSelectedMap: { [photoId: string]: Photo };
 
     routeData: any;
     links: any;
@@ -189,6 +190,28 @@ export class HomeComponent implements OnInit {
 
     getTagSelected() {
         return this.history[this.history.length - 1];
+    }
+
+    onClickPhoto(photo: Photo) {
+
+    }
+
+    onSelectPhoto(photo: Photo) {
+        this.photosSelectedMap = this.createIfNotExist(this.photosSelectedMap);
+        if (this.photosSelectedMap.hasOwnProperty(photo.id)) {
+            delete this.photosSelectedMap[photo.id];
+        } else {
+            this.photosSelectedMap[photo.id] = photo;
+        }
+    }
+
+    isPhotoSelected(photo: Photo) {
+        this.photosSelectedMap = this.createIfNotExist(this.photosSelectedMap);
+        return this.photosSelectedMap.hasOwnProperty(photo.id);
+    }
+
+    createIfNotExist(map: any): any {
+        return (!map) ? {} : map;
     }
 
 }

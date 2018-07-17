@@ -72,7 +72,13 @@
     </h3>
 
     <div *ngIf="photos" [ngClass]="{ 'photos': photos.length > 6, 'photos-lower-6': photos.length <= 6 }">
-        <img *ngFor="let photo of photos" class="photo" [src]="photo.thumbnail" alt="{{photo.fileName + '.' + photo.type}}">
+        <div *ngFor="let photo of photos" class="photo">
+            <div class="photo-container">
+                <div class="photo-overlay"></div>
+                <span class="photo-select fa fa-lg" [ngClass]="{ 'is-selected': isPhotoSelected(photo) }" (click)="onSelectPhoto(photo)"></span>
+                <img class="photo-img" [src]="photo.thumbnail" alt="{{photo.fileName + '.' + photo.type}}" (click)="onClickPhoto(photo)">
+            </div>
+        </div>
     </div>
     <div *ngIf="photos && photos.length === 0">No photo found.</div>
 

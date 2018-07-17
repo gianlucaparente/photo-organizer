@@ -29,14 +29,64 @@ only screen and (                min-resolution: 2dppx) {
     display: flex;
     align-items: flex-start;
 
-    .photo {
-        width: 200px;
-        height: auto;
+    .photo-container {
+        position: relative;
         margin-right: 6px;
+        background-color: black;
+        cursor: pointer;
+
+        .photo-select {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 200;
+            color: white;
+            padding: 5px;
+            height: 19px;
+            line-height: 20px;
+
+            &:before {
+                content: "\f10c";
+            }
+
+            &:hover {
+
+                &:before {
+                    content: "\f058";
+                }
+
+                + .photo-img {
+                    opacity: 0.8;
+                }
+
+            }
+
+        }
+
+        .is-selected {
+            color: #3E8ACC;
+
+            &:before {
+                content: "\f058";
+            }
+
+        }
+
+        .photo-img {
+            width: 200px;
+            height: auto;
+
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+
     }
+
 }
 
 .photos {
+    position: relative;
     line-height: 0;
     -webkit-column-count: 6;
     -webkit-column-gap:   0px;
@@ -45,17 +95,61 @@ only screen and (                min-resolution: 2dppx) {
     column-count:         6;
     column-gap:           0px;
 
-    .photo {
-        width: 98%;
-        height: auto;
+    .photo-container {
+        position: relative;
+        margin-right: 6px;
         margin-bottom: 6px;
+        background-color: black;
         cursor: pointer;
+
+        .photo-select {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 200;
+            color: white;
+            padding: 5px;
+            height: 19px;
+            line-height: 20px;
+
+            &:before {
+                content: "\f10c";
+            }
+
+            &:hover {
+
+                &:before {
+                    content: "\f058";
+                }
+
+                + .photo-img {
+                    opacity: 0.8;
+                }
+
+            }
+
+        }
+
+        .is-selected {
+            color: #3E8ACC;
+
+            &:before {
+                content: "\f058";
+            }
+
+        }
+
+        .photo-img {
+            width: 100%;
+            height: auto;
+
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+
     }
 
-    .photo:hover {
-        cursor: pointer;
-        opacity: 0.8;
-    }
 }
 
 @media (max-width: 1200px) {
